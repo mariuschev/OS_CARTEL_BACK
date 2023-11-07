@@ -1,7 +1,12 @@
 import java.util.Scanner;
+import java.lang.Thread;
+
 public class main {
-    public static void main(String[] args) {
-        // donner le choix a l utilisateur de choisir si il veut faire matrice d addition,multiplication ou transposé
+    //fonction affichage du menu
+    public static int displayMenu(){
+        System.out.println("\n");
+        System.out.println("\n");
+        System.out.println("#-------------------------------------------------------------------------------------#");
         int choix;
         Scanner sc = new Scanner(System.in);
         System.out.println("Choose the operation you want to do : ");
@@ -9,29 +14,40 @@ public class main {
         System.out.println("2- Matrix Multiplication");
         System.out.println("3- Matrix Transpose");
         System.out.println("4- quit");
-
+        System.out.println("\n");
         System.out.println("#-------------------------------------------------------------------------------------#");
         System.out.println("Enter your choice : ");
         choix = sc.nextInt();
+        return choix;
+    }
 
+    public static void main(String[] args) throws InterruptedException {
+        int choix = displayMenu();
 
-        switch(choix){
-            case 1:
-                System.out.println("#-----------------------------------Matrix Addition-----------------------------------#");
-                MatrixAddition.main(args);
-                break;
-            case 2:
-                MatrixMultiplication.main(args);
-                break;
-            case 3:
-                MatrixTranspose.main(args);
-                break;
-            case 4:
-                System.out.println("Goodbye");
-                break;
-            default:
-                System.out.println("Invalid choice");
-                break;
+        while (choix != 4) {
+
+            switch (choix) {
+                case 1:
+                    MatrixAddition.main(args);
+                    Thread.sleep(10000);
+                    break;
+                case 2:
+                    MatrixMultiplication.main(args);
+                    Thread.sleep(10000);
+                    break;
+                case 3:
+                    MatrixTranspose.main(args);
+                    Thread.sleep(10000);
+                    break;
+                case 4:
+                    System.out.println("Goodbye");
+                    break;
+                default:
+                    System.out.println("Invalid choice");
+                    break;
+            }
+
+            choix = displayMenu();
         }
     }
 }
