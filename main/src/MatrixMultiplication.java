@@ -19,19 +19,19 @@ class MatrixMultiplication {
         long startTime, endTime;
 
         // Sequential Matrix Multiplication
-        startTime = System.currentTimeMillis();
+        startTime = System.nanoTime();
         multiplyMatricesSequentially();
-        endTime = System.currentTimeMillis();
-        System.out.println("Sequential Multiplication Time: " + (endTime - startTime) + " milliseconds");
+        endTime = System.nanoTime();
+        System.out.println("Sequential Multiplication Time: " + (endTime - startTime) + " nanoseconds");
 
         // Reset resultMatrix for parallel multiplication
         resultMatrix = new int[MATRIX_SIZE][MATRIX_SIZE];
 
         // Parallel Matrix Multiplication
-        startTime = System.currentTimeMillis();
+        startTime = System.nanoTime();
         multiplyMatricesConcurrently();
-        endTime = System.currentTimeMillis();
-        System.out.println("Parallel Multiplication Time: " + (endTime - startTime) + " milliseconds");
+        endTime = System.nanoTime();
+        System.out.println("Parallel Multiplication Time: " + (endTime - startTime) + " nanoseconds");
         // Verify that both results are the same
         verifyResults();
     }

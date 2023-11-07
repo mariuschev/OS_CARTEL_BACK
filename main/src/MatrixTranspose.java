@@ -17,19 +17,19 @@ class MatrixTranspose {
         long startTime, endTime;
 
         // Sequential Matrix Transposition
-        startTime = System.currentTimeMillis();
+        startTime = System.nanoTime();
         transposeMatrixSequentially();
-        endTime = System.currentTimeMillis();
-        System.out.println("Sequential Transposition Time: " + (endTime - startTime) + " milliseconds");
+        endTime = System.nanoTime();
+        System.out.println("Sequential Transposition Time: " + (endTime - startTime) + " nanoseconds");
 
         // Reset transposedMatrix for parallel transposition
         transposedMatrix = new int[MATRIX_SIZE][MATRIX_SIZE];
 
         // Parallel Matrix Transposition
-        startTime = System.currentTimeMillis();
+        startTime = System.nanoTime();
         transposeMatrixConcurrently();
-        endTime = System.currentTimeMillis();
-        System.out.println("Parallel Transposition Time: " + (endTime - startTime) + " milliseconds");
+        endTime = System.nanoTime();
+        System.out.println("Parallel Transposition Time: " + (endTime - startTime) + " nanoseconds");
 
         // Verify that both results are the same
         verifyResults();
