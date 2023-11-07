@@ -1,18 +1,21 @@
 import java.util.Random;
+import java.util.concurrent.Semaphore;
+
 public class MatrixAddition {
-    private static final int MATRIX_SIZE = 1000;
-    private static final int NUM_THREADS = 4;
+    private static final int MATRIX_SIZE = 2000;
+    private static final int NUM_THREADS = 200;
 
     private static int[][] matrixA;
     private static int[][] matrixB;
     private static int[][] resultMatrix;
 
+    // Semaphore to control access to the shared resultMatrix
+    private static Semaphore semaphore = new Semaphore(1);
+
     public static void main(String[] args) {
         matrixA = initializeMatrix(MATRIX_SIZE, MATRIX_SIZE);
         matrixB = initializeMatrix(MATRIX_SIZE, MATRIX_SIZE);
         resultMatrix = new int[MATRIX_SIZE][MATRIX_SIZE];
-
-
 
         // Sequential Matrix Addition
         long startTimeSeq = System.nanoTime();
@@ -20,13 +23,15 @@ public class MatrixAddition {
         long endTimeSeq = System.nanoTime();
         System.out.println("\nSequential Addition Time: " + (endTimeSeq - startTimeSeq) + " nanoseconds");
 
+        // Reset resultMatrix for parallel addition
+        resultMatrix = new int[MATRIX_SIZE][MATRIX_SIZE];
 
-
-        // Parallel Matrix Transposition
+        // Parallel Matrix Addition
         long startTimeParallel = System.nanoTime();
         addMatricesConcurrently();
         long endTimeParallel = System.nanoTime();
         System.out.println("\nParallel Addition Time: " + (endTimeParallel - startTimeParallel) + " nanoseconds");
+
         // Verify that both results are the same
         verifyResults();
     }
@@ -43,6 +48,7 @@ public class MatrixAddition {
 
         return matrix;
     }
+
     private static void printMatrix(int[][] matrix) {
         for (int[] row : matrix) {
             for (int value : row) {
@@ -84,7 +90,6 @@ public class MatrixAddition {
     }
 
     private static void verifyResults() {
-        // Verify that the results of sequential and parallel addition are the same
         for (int i = 0; i < MATRIX_SIZE; i++) {
             for (int j = 0; j < MATRIX_SIZE; j++) {
                 if (resultMatrix[i][j] != matrixA[i][j] + matrixB[i][j]) {
@@ -107,13 +112,18 @@ public class MatrixAddition {
 
         @Override
         public void run() {
-            for (int i = startRow; i < endRow; i++) {
-                for (int j = 0; j < MATRIX_SIZE; j++) {
-                    resultMatrix[i][j] = matrixA[i][j] + matrixB[i][j];
+            try {
+                semaphore.acquire();
+                for (int i = startRow; i < endRow; i++) {
+                    for (int j = 0; j < MATRIX_SIZE; j++) {
+                        resultMatrix[i][j] = matrixA[i][j] + matrixB[i][j];
+                    }
                 }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } finally {
+                semaphore.release();
             }
         }
     }
 }
-
-
