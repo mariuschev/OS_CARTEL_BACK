@@ -1,11 +1,15 @@
 import java.util.Random;
-public class MatrixMultiplication {
-    private static final int MATRIX_SIZE = 4; // Adjust the matrix size as needed
-    private static final int NUM_THREADS = 2; // Number of threads to use
+import java.util.concurrent.locks.ReentrantLock;
+
+class MatrixMultiplication {
+    private static final int MATRIX_SIZE = 4;
+    private static final int NUM_THREADS = 2;
 
     private static int[][] matrixA;
     private static int[][] matrixB;
     private static int[][] resultMatrix;
+
+    private static ReentrantLock lock = new ReentrantLock();
 
     public static void main(String[] args) {
         matrixA = initializeMatrix(MATRIX_SIZE, MATRIX_SIZE);
@@ -15,18 +19,20 @@ public class MatrixMultiplication {
         long startTime, endTime;
 
         // Sequential Matrix Multiplication
-        long startTimeSeq = System.nanoTime();
+        startTime = System.nanoTime();
         multiplyMatricesSequentially();
-        long endTimeSeq = System.nanoTime();
-        System.out.println("\nSequential Transposition Time: " + (endTimeSeq - startTimeSeq) + " nanoseconds");
+        endTime = System.nanoTime();
+        System.out.println("Sequential Multiplication Time: " + (endTime - startTime) + " nanoseconds");
 
-        // ... (same as before)
+        // Reset resultMatrix for parallel multiplication
+        resultMatrix = new int[MATRIX_SIZE][MATRIX_SIZE];
 
-        // Parallel Matrix Transposition
-        long startTimeParallel = System.nanoTime();
+        // Parallel Matrix Multiplication
+        startTime = System.nanoTime();
         multiplyMatricesConcurrently();
-        long endTimeParallel = System.nanoTime();
-        System.out.println("\nParallel Transposition Time: " + (endTimeParallel - startTimeParallel) + " nanoseconds");
+        endTime = System.nanoTime();
+        System.out.println("Parallel Multiplication Time: " + (endTime - startTime) + " nanoseconds");
+
         // Verify that both results are the same
         verifyResults();
     }
@@ -37,7 +43,7 @@ public class MatrixMultiplication {
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                matrix[i][j] = random.nextInt(10); // Adjust the range of random values as needed
+                matrix[i][j] = random.nextInt(10);
             }
         }
 
@@ -78,7 +84,6 @@ public class MatrixMultiplication {
     }
 
     private static void verifyResults() {
-        // Verify that the results of sequential and parallel multiplication are the same
         for (int i = 0; i < MATRIX_SIZE; i++) {
             for (int j = 0; j < MATRIX_SIZE; j++) {
                 if (resultMatrix[i][j] != matrixA[i][j] * matrixB[i][j]) {
@@ -104,7 +109,13 @@ public class MatrixMultiplication {
             for (int i = startRow; i < endRow; i++) {
                 for (int j = 0; j < MATRIX_SIZE; j++) {
                     for (int k = 0; k < MATRIX_SIZE; k++) {
-                        resultMatrix[i][j] += matrixA[i][k] * matrixB[k][j];
+                        // Use lock to protect the critical section
+                        lock.lock();
+                        try {
+                            resultMatrix[i][j] += matrixA[i][k] * matrixB[k][j];
+                        } finally {
+                            lock.unlock();
+                        }
                     }
                 }
             }
