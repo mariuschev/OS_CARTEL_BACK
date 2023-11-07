@@ -12,21 +12,21 @@ public class MatrixAddition {
         matrixB = initializeMatrix(MATRIX_SIZE, MATRIX_SIZE);
         resultMatrix = new int[MATRIX_SIZE][MATRIX_SIZE];
 
-        long startTime, endTime;
+
 
         // Sequential Matrix Addition
-        long startTimeSeq = System.nanoTime();
+        long startTimeSeq = System.currentTimeMillis();
         addMatricesSequentially();
-        long endTimeSeq = System.nanoTime();
-        System.out.println("\nSequential Transposition Time: " + (endTimeSeq - startTimeSeq) + " nanoseconds");
+        long endTimeSeq = System.currentTimeMillis();
+        System.out.println("\nSequential Addition Time: " + (endTimeSeq - startTimeSeq) + " milliseconds");
 
-        // ... (same as before)
+
 
         // Parallel Matrix Transposition
-        long startTimeParallel = System.nanoTime();
+        long startTimeParallel = System.currentTimeMillis();
         addMatricesConcurrently();
-        long endTimeParallel = System.nanoTime();
-        System.out.println("\nParallel Transposition Time: " + (endTimeParallel - startTimeParallel) + " nanoseconds");
+        long endTimeParallel = System.currentTimeMillis();
+        System.out.println("\nParallel Addition Time: " + (endTimeParallel - startTimeParallel) + " milliseconds");
         // Verify that both results are the same
         verifyResults();
     }

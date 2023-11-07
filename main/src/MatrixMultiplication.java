@@ -19,20 +19,19 @@ class MatrixMultiplication {
         long startTime, endTime;
 
         // Sequential Matrix Multiplication
-        startTime = System.nanoTime();
+        startTime = System.currentTimeMillis();
         multiplyMatricesSequentially();
-        endTime = System.nanoTime();
-        System.out.println("Sequential Multiplication Time: " + (endTime - startTime) + " nanoseconds");
+        endTime = System.currentTimeMillis();
+        System.out.println("Sequential Multiplication Time: " + (endTime - startTime) + " milliseconds");
 
         // Reset resultMatrix for parallel multiplication
         resultMatrix = new int[MATRIX_SIZE][MATRIX_SIZE];
 
         // Parallel Matrix Multiplication
-        startTime = System.nanoTime();
+        startTime = System.currentTimeMillis();
         multiplyMatricesConcurrently();
-        endTime = System.nanoTime();
-        System.out.println("Parallel Multiplication Time: " + (endTime - startTime) + " nanoseconds");
-
+        endTime = System.currentTimeMillis();
+        System.out.println("Parallel Multiplication Time: " + (endTime - startTime) + " milliseconds");
         // Verify that both results are the same
         verifyResults();
     }
@@ -84,15 +83,24 @@ class MatrixMultiplication {
     }
 
     private static void verifyResults() {
+        // Verify that the results of parallel multiplication match the sequential multiplication
         for (int i = 0; i < MATRIX_SIZE; i++) {
             for (int j = 0; j < MATRIX_SIZE; j++) {
-                if (resultMatrix[i][j] != matrixA[i][j] * matrixB[i][j]) {
+                if (resultMatrix[i][j] != getSequentialMultiplicationResult(i, j)) {
                     System.err.println("Error: Results do not match!");
                     return;
                 }
             }
         }
         System.out.println("Results Verified: Sequential and Parallel Multiplication Match");
+    }
+
+    private static int getSequentialMultiplicationResult(int row, int col) {
+        int result = 0;
+        for (int k = 0; k < MATRIX_SIZE; k++) {
+            result += matrixA[row][k] * matrixB[k][col];
+        }
+        return result;
     }
 
     private static class MatrixMultiplier implements Runnable {
