@@ -15,17 +15,18 @@ public class MatrixMultiplication {
         long startTime, endTime;
 
         // Sequential Matrix Multiplication
-        startTime = System.currentTimeMillis();
+        long startTimeSeq = System.nanoTime();
         multiplyMatricesSequentially();
-        endTime = System.currentTimeMillis();
-        System.out.println("Sequential Multiplication Time: " + (endTime - startTime) + " milliseconds");
+        long endTimeSeq = System.nanoTime();
+        System.out.println("\nSequential Transposition Time: " + (endTimeSeq - startTimeSeq) + " nanoseconds");
 
-        // Parallel Matrix Multiplication
-        startTime = System.currentTimeMillis();
+        // ... (same as before)
+
+        // Parallel Matrix Transposition
+        long startTimeParallel = System.nanoTime();
         multiplyMatricesConcurrently();
-        endTime = System.currentTimeMillis();
-        System.out.println("Parallel Multiplication Time: " + (endTime - startTime) + " milliseconds");
-
+        long endTimeParallel = System.nanoTime();
+        System.out.println("\nParallel Transposition Time: " + (endTimeParallel - startTimeParallel) + " nanoseconds");
         // Verify that both results are the same
         verifyResults();
     }

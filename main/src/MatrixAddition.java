@@ -15,17 +15,18 @@ public class MatrixAddition {
         long startTime, endTime;
 
         // Sequential Matrix Addition
-        startTime = System.currentTimeMillis();
+        long startTimeSeq = System.nanoTime();
         addMatricesSequentially();
-        endTime = System.currentTimeMillis();
-        System.out.println("Sequential Addition Time: " + (endTime - startTime) + " milliseconds");
+        long endTimeSeq = System.nanoTime();
+        System.out.println("\nSequential Transposition Time: " + (endTimeSeq - startTimeSeq) + " nanoseconds");
 
-        // Parallel Matrix Addition
-        startTime = System.currentTimeMillis();
+        // ... (same as before)
+
+        // Parallel Matrix Transposition
+        long startTimeParallel = System.nanoTime();
         addMatricesConcurrently();
-        endTime = System.currentTimeMillis();
-        System.out.println("Parallel Addition Time: " + (endTime - startTime) + " milliseconds");
-
+        long endTimeParallel = System.nanoTime();
+        System.out.println("\nParallel Transposition Time: " + (endTimeParallel - startTimeParallel) + " nanoseconds");
         // Verify that both results are the same
         verifyResults();
     }
