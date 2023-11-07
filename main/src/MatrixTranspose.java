@@ -1,14 +1,14 @@
 import java.util.Random;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 class MatrixTranspose {
-    private static final int MATRIX_SIZE = 4;
-    private static final int NUM_THREADS = 2;
+    private static final int MATRIX_SIZE = 1000;
+    private static final int NUM_THREADS = 100;
 
     private static int[][] originalMatrix;
     private static int[][] transposedMatrix;
-
-    private static ReentrantLock lock = new ReentrantLock();
 
     public static void main(String[] args) {
         originalMatrix = initializeMatrix(MATRIX_SIZE, MATRIX_SIZE);
@@ -58,25 +58,34 @@ class MatrixTranspose {
     }
 
     private static void transposeMatrixConcurrently() {
-        Thread[] threads = new Thread[NUM_THREADS];
-        int submatrixSize = MATRIX_SIZE / NUM_THREADS;
+        ExecutorService executorService = Executors.newFixedThreadPool(NUM_THREADS);
 
         for (int i = 0; i < NUM_THREADS; i++) {
-            int startRow = i * submatrixSize;
-            int endRow = (i == NUM_THREADS - 1) ? MATRIX_SIZE : startRow + submatrixSize;
-            threads[i] = new Thread(new MatrixTransposer(startRow, endRow));
-            threads[i].start();
+            final int threadIndex = i;
+            executorService.submit(() -> {
+                int startRow = threadIndex * (MATRIX_SIZE / NUM_THREADS);
+                int endRow = (threadIndex == NUM_THREADS - 1) ? MATRIX_SIZE : (threadIndex + 1) * (MATRIX_SIZE / NUM_THREADS);
+                transposeSubmatrix(startRow, endRow);
+            });
         }
 
+        executorService.shutdown();
+
         try {
-            for (Thread thread : threads) {
-                thread.join();
-            }
+            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
         System.out.println("Parallel Matrix Transposition Completed");
+    }
+
+    private static void transposeSubmatrix(int startRow, int endRow) {
+        for (int i = startRow; i < endRow; i++) {
+            for (int j = 0; j < MATRIX_SIZE; j++) {
+                transposedMatrix[j][i] = originalMatrix[i][j];
+            }
+        }
     }
 
     private static void verifyResults() {
@@ -89,30 +98,5 @@ class MatrixTranspose {
             }
         }
         System.out.println("Results Verified: Sequential and Parallel Transposition Match");
-    }
-
-    private static class MatrixTransposer implements Runnable {
-        private final int startRow;
-        private final int endRow;
-
-        public MatrixTransposer(int startRow, int endRow) {
-            this.startRow = startRow;
-            this.endRow = endRow;
-        }
-
-        @Override
-        public void run() {
-            for (int i = startRow; i < endRow; i++) {
-                for (int j = 0; j < MATRIX_SIZE; j++) {
-                    // Use lock to protect the critical section
-                    lock.lock();
-                    try {
-                        transposedMatrix[j][i] = originalMatrix[i][j];
-                    } finally {
-                        lock.unlock();
-                    }
-                }
-            }
-        }
     }
 }

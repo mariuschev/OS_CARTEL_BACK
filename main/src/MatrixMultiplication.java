@@ -1,37 +1,38 @@
 import java.util.Random;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 class MatrixMultiplication {
-    private static final int MATRIX_SIZE = 4;
-    private static final int NUM_THREADS = 2;
+    private static final int MATRIX_SIZE = 1000;
+    private static final int NUM_THREADS = 100;
 
     private static int[][] matrixA;
     private static int[][] matrixB;
     private static int[][] resultMatrix;
-
-    private static ReentrantLock lock = new ReentrantLock();
 
     public static void main(String[] args) {
         matrixA = initializeMatrix(MATRIX_SIZE, MATRIX_SIZE);
         matrixB = initializeMatrix(MATRIX_SIZE, MATRIX_SIZE);
         resultMatrix = new int[MATRIX_SIZE][MATRIX_SIZE];
 
-        long startTime, endTime;
-
-        // Sequential Matrix Multiplication
-        startTime = System.nanoTime();
+        System.out.println("Sequential Matrix Multiplication:");
+        long startTimeSeq = System.nanoTime();
         multiplyMatricesSequentially();
-        endTime = System.nanoTime();
-        System.out.println("Sequential Multiplication Time: " + (endTime - startTime) + " nanoseconds");
+        long endTimeSeq = System.nanoTime();
+        //printMatrix(resultMatrix);
+        System.out.println("Sequential Multiplication Time: " + (endTimeSeq - startTimeSeq) + " nanoseconds");
 
         // Reset resultMatrix for parallel multiplication
         resultMatrix = new int[MATRIX_SIZE][MATRIX_SIZE];
 
-        // Parallel Matrix Multiplication
-        startTime = System.nanoTime();
+        System.out.println("\nParallel Matrix Multiplication:");
+        long startTimeParallel = System.nanoTime();
         multiplyMatricesConcurrently();
-        endTime = System.nanoTime();
-        System.out.println("Parallel Multiplication Time: " + (endTime - startTime) + " nanoseconds");
+        long endTimeParallel = System.nanoTime();
+        //printMatrix(resultMatrix);
+        System.out.println("Parallel Multiplication Time: " + (endTimeParallel - startTimeParallel) + " nanoseconds");
+
         // Verify that both results are the same
         verifyResults();
     }
@@ -49,6 +50,15 @@ class MatrixMultiplication {
         return matrix;
     }
 
+    private static void printMatrix(int[][] matrix) {
+        for (int[] row : matrix) {
+            for (int value : row) {
+                System.out.print(value + " ");
+            }
+            System.out.println();
+        }
+    }
+
     private static void multiplyMatricesSequentially() {
         for (int i = 0; i < MATRIX_SIZE; i++) {
             for (int j = 0; j < MATRIX_SIZE; j++) {
@@ -57,29 +67,31 @@ class MatrixMultiplication {
                 }
             }
         }
-        System.out.println("Sequential Matrix Multiplication Completed");
     }
 
     private static void multiplyMatricesConcurrently() {
-        Thread[] threads = new Thread[NUM_THREADS];
-        int submatrixSize = MATRIX_SIZE / NUM_THREADS;
+        ExecutorService executor = Executors.newFixedThreadPool(NUM_THREADS);
 
-        for (int i = 0; i < NUM_THREADS; i++) {
-            int startRow = i * submatrixSize;
-            int endRow = (i == NUM_THREADS - 1) ? MATRIX_SIZE : startRow + submatrixSize;
-            threads[i] = new Thread(new MatrixMultiplier(startRow, endRow));
-            threads[i].start();
+        for (int i = 0; i < MATRIX_SIZE; i++) {
+            for (int j = 0; j < MATRIX_SIZE; j++) {
+                final int row = i;
+                final int col = j;
+                executor.submit(() -> multiplyElement(row, col));
+            }
         }
 
+        executor.shutdown();
         try {
-            for (Thread thread : threads) {
-                thread.join();
-            }
+            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
 
-        System.out.println("Parallel Matrix Multiplication Completed");
+    private static void multiplyElement(int row, int col) {
+        for (int k = 0; k < MATRIX_SIZE; k++) {
+            resultMatrix[row][col] += matrixA[row][k] * matrixB[k][col];
+        }
     }
 
     private static void verifyResults() {
@@ -101,32 +113,5 @@ class MatrixMultiplication {
             result += matrixA[row][k] * matrixB[k][col];
         }
         return result;
-    }
-
-    private static class MatrixMultiplier implements Runnable {
-        private final int startRow;
-        private final int endRow;
-
-        public MatrixMultiplier(int startRow, int endRow) {
-            this.startRow = startRow;
-            this.endRow = endRow;
-        }
-
-        @Override
-        public void run() {
-            for (int i = startRow; i < endRow; i++) {
-                for (int j = 0; j < MATRIX_SIZE; j++) {
-                    for (int k = 0; k < MATRIX_SIZE; k++) {
-                        // Use lock to protect the critical section
-                        lock.lock();
-                        try {
-                            resultMatrix[i][j] += matrixA[i][k] * matrixB[k][j];
-                        } finally {
-                            lock.unlock();
-                        }
-                    }
-                }
-            }
-        }
     }
 }
