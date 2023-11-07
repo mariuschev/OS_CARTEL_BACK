@@ -9,10 +9,15 @@ public class main {
         System.out.println("2- Matrix Multiplication");
         System.out.println("3- Matrix Transpose");
         System.out.println("4- quit");
+
+        System.out.println("#-------------------------------------------------------------------------------------#");
+        System.out.println("Enter your choice : ");
         choix = sc.nextInt();
+
 
         switch(choix){
             case 1:
+                System.out.println("#-----------------------------------Matrix Addition-----------------------------------#");
                 MatrixAddition.main(args);
                 break;
             case 2:
