@@ -1,11 +1,14 @@
 import java.util.Random;
+import java.util.concurrent.locks.ReentrantLock;
 
 class MatrixTranspose {
-    private static final int MATRIX_SIZE = 4; // Adjust the matrix size as needed
-    private static final int NUM_THREADS = 2; // Number of threads to use
+    private static final int MATRIX_SIZE = 4;
+    private static final int NUM_THREADS = 2;
 
     private static int[][] originalMatrix;
     private static int[][] transposedMatrix;
+
+    private static ReentrantLock lock = new ReentrantLock();
 
     public static void main(String[] args) {
         originalMatrix = initializeMatrix(MATRIX_SIZE, MATRIX_SIZE);
@@ -13,25 +16,23 @@ class MatrixTranspose {
 
         long startTime, endTime;
 
-        System.out.println("Original Matrix:");
-        printMatrix(originalMatrix);
-
         // Sequential Matrix Transposition
-        long startTimeSeq = System.nanoTime();
+        startTime = System.nanoTime();
         transposeMatrixSequentially();
-        long endTimeSeq = System.nanoTime();
-        System.out.println("\nSequential Transposition Time: " + (endTimeSeq - startTimeSeq) + " nanoseconds");
+        endTime = System.nanoTime();
+        System.out.println("Sequential Transposition Time: " + (endTime - startTime) + " nanoseconds");
 
-        // ... (same as before)
+        // Reset transposedMatrix for parallel transposition
+        transposedMatrix = new int[MATRIX_SIZE][MATRIX_SIZE];
 
         // Parallel Matrix Transposition
-        long startTimeParallel = System.nanoTime();
+        startTime = System.nanoTime();
         transposeMatrixConcurrently();
-        long endTimeParallel = System.nanoTime();
-        System.out.println("\nParallel Transposition Time: " + (endTimeParallel - startTimeParallel) + " nanoseconds");
+        endTime = System.nanoTime();
+        System.out.println("Parallel Transposition Time: " + (endTime - startTime) + " nanoseconds");
 
-        System.out.println("\nTransposed Matrix (Parallel):");
-        printMatrix(transposedMatrix);
+        // Verify that both results are the same
+        verifyResults();
     }
 
     private static int[][] initializeMatrix(int rows, int cols) {
@@ -40,20 +41,11 @@ class MatrixTranspose {
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                matrix[i][j] = random.nextInt(10); // Adjust the range of random values as needed
+                matrix[i][j] = random.nextInt(10);
             }
         }
 
         return matrix;
-    }
-
-    private static void printMatrix(int[][] matrix) {
-        for (int[] row : matrix) {
-            for (int value : row) {
-                System.out.print(value + " ");
-            }
-            System.out.println();
-        }
     }
 
     private static void transposeMatrixSequentially() {
@@ -62,7 +54,7 @@ class MatrixTranspose {
                 transposedMatrix[j][i] = originalMatrix[i][j];
             }
         }
-        System.out.println("\nSequential Matrix Transposition Completed");
+        System.out.println("Sequential Matrix Transposition Completed");
     }
 
     private static void transposeMatrixConcurrently() {
@@ -84,7 +76,19 @@ class MatrixTranspose {
             e.printStackTrace();
         }
 
-        System.out.println("\nParallel Matrix Transposition Completed");
+        System.out.println("Parallel Matrix Transposition Completed");
+    }
+
+    private static void verifyResults() {
+        for (int i = 0; i < MATRIX_SIZE; i++) {
+            for (int j = 0; j < MATRIX_SIZE; j++) {
+                if (transposedMatrix[i][j] != originalMatrix[j][i]) {
+                    System.err.println("Error: Results do not match!");
+                    return;
+                }
+            }
+        }
+        System.out.println("Results Verified: Sequential and Parallel Transposition Match");
     }
 
     private static class MatrixTransposer implements Runnable {
@@ -100,10 +104,15 @@ class MatrixTranspose {
         public void run() {
             for (int i = startRow; i < endRow; i++) {
                 for (int j = 0; j < MATRIX_SIZE; j++) {
-                    transposedMatrix[j][i] = originalMatrix[i][j];
+                    // Use lock to protect the critical section
+                    lock.lock();
+                    try {
+                        transposedMatrix[j][i] = originalMatrix[i][j];
+                    } finally {
+                        lock.unlock();
+                    }
                 }
             }
         }
     }
 }
-
