@@ -17,21 +17,21 @@ class MatrixMultiplication {
         resultMatrix = new int[MATRIX_SIZE][MATRIX_SIZE];
 
         System.out.println("Sequential Matrix Multiplication:");
-        long startTimeSeq = System.nanoTime();
+        long startTimeSeq = System.currentTimeMillis();
         multiplyMatricesSequentially();
-        long endTimeSeq = System.nanoTime();
+        long endTimeSeq = System.currentTimeMillis();
         //printMatrix(resultMatrix);
-        System.out.println("Sequential Multiplication Time: " + (endTimeSeq - startTimeSeq) + " nanoseconds");
+        System.out.println("Sequential Multiplication Time: " + (endTimeSeq - startTimeSeq) + " milliseconds");
 
         // Reset resultMatrix for parallel multiplication
         resultMatrix = new int[MATRIX_SIZE][MATRIX_SIZE];
 
         System.out.println("\nParallel Matrix Multiplication:");
-        long startTimeParallel = System.nanoTime();
+        long startTimeParallel = System.currentTimeMillis();
         multiplyMatricesConcurrently();
-        long endTimeParallel = System.nanoTime();
+        long endTimeParallel = System.currentTimeMillis();
         //printMatrix(resultMatrix);
-        System.out.println("Parallel Multiplication Time: " + (endTimeParallel - startTimeParallel) + " nanoseconds");
+        System.out.println("Parallel Multiplication Time: " + (endTimeParallel - startTimeParallel) + " milliseconds");
 
         // Verify that both results are the same
         verifyResults();
