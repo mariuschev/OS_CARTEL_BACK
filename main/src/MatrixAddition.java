@@ -1,7 +1,7 @@
 import java.util.Random;
 
 public class MatrixAddition {
-    private static final int MATRIX_SIZE = 1000;
+    private static final int MATRIX_SIZE = 2000;
     private static final int NUM_THREADS = 100;
 
     private static int[][] matrixA;
@@ -13,18 +13,17 @@ public class MatrixAddition {
         matrixB = initializeMatrix(MATRIX_SIZE, MATRIX_SIZE);
         resultMatrix = new int[MATRIX_SIZE][MATRIX_SIZE];
 
-        // Parallel Matrix Addition
-        long startTimeParallel = System.nanoTime();
-        addMatricesConcurrently();
-        long endTimeParallel = System.nanoTime();
-        System.out.println("Parallel Addition Time: " + (endTimeParallel - startTimeParallel) + " nanoseconds");
-
         // Sequential Matrix Addition
         long startTimeSeq = System.nanoTime();
         addMatricesSequentially();
         long endTimeSeq = System.nanoTime();
         System.out.println("Sequential Addition Time: " + (endTimeSeq - startTimeSeq) + " nanoseconds");
 
+        // Parallel Matrix Addition
+        long startTimeParallel = System.nanoTime();
+        addMatricesConcurrently();
+        long endTimeParallel = System.nanoTime();
+        System.out.println("Parallel Addition Time: " + (endTimeParallel - startTimeParallel) + " nanoseconds");
         // Verify that both results are the same
         verifyResults();
     }
@@ -52,19 +51,13 @@ public class MatrixAddition {
     }
 
     private static void addMatricesConcurrently() {
-        Thread[] threads = new Thread[NUM_THREADS];
         int blockSize = MATRIX_SIZE / NUM_THREADS;
+        Thread[] threads = new Thread[NUM_THREADS];
 
         for (int i = 0; i < NUM_THREADS; i++) {
-            int startRow = i * blockSize;
-            int endRow = (i == NUM_THREADS - 1) ? MATRIX_SIZE : startRow + blockSize;
-            threads[i] = new Thread(() -> {
-                for (int row = startRow; row < endRow; row++) {
-                    for (int col = 0; col < MATRIX_SIZE; col++) {
-                        resultMatrix[row][col] = matrixA[row][col] + matrixB[row][col];
-                    }
-                }
-            });
+            final int startRow = i * blockSize;
+            final int endRow = (i == NUM_THREADS - 1) ? MATRIX_SIZE : startRow + blockSize;
+            threads[i] = new Thread(new MatrixAdder(startRow, endRow));
             threads[i].start();
         }
 
@@ -77,6 +70,25 @@ public class MatrixAddition {
         }
 
         System.out.println("Parallel Matrix Addition Completed");
+    }
+
+    private static class MatrixAdder implements Runnable {
+        private final int startRow;
+        private final int endRow;
+
+        public MatrixAdder(int startRow, int endRow) {
+            this.startRow = startRow;
+            this.endRow = endRow;
+        }
+
+        @Override
+        public void run() {
+            for (int row = startRow; row < endRow; row++) {
+                for (int col = 0; col < MATRIX_SIZE; col++) {
+                    resultMatrix[row][col] = matrixA[row][col] + matrixB[row][col];
+                }
+            }
+        }
     }
 
     private static void verifyResults() {
