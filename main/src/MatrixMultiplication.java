@@ -1,17 +1,25 @@
 import java.util.Random;
+import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 class MatrixMultiplication {
-    private static final int MATRIX_SIZE = 1000;
-    private static final int NUM_THREADS = 100;
+    private static int MATRIX_SIZE;
+    private static int NUM_THREADS;
 
     private static int[][] matrixA;
     private static int[][] matrixB;
     private static int[][] resultMatrix;
 
     public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter Matrix Size : ");
+        MATRIX_SIZE = scanner.nextInt();
+
+        System.out.print("Enter number of threads : ");
+        NUM_THREADS = scanner.nextInt();
         matrixA = initializeMatrix(MATRIX_SIZE, MATRIX_SIZE);
         matrixB = initializeMatrix(MATRIX_SIZE, MATRIX_SIZE);
         resultMatrix = new int[MATRIX_SIZE][MATRIX_SIZE];
