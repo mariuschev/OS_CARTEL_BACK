@@ -1,7 +1,7 @@
 import java.util.Random;
 
 public class MatrixAddition {
-    private static final int MATRIX_SIZE = 2000;
+    private static final int MATRIX_SIZE = 5000;
     private static final int NUM_THREADS = 100;
 
     private static int[][] matrixA;

@@ -1,11 +1,8 @@
 import java.util.Random;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
-class MatrixTranspose {
-    private static final int MATRIX_SIZE = 1000;
-    private static final int NUM_THREADS = 100;
+public class MatrixTranspose {
+    private static final int MATRIX_SIZE = 2000; // Taille de la matrice
+    private static int NUM_THREADS = 4; // Utilisation du nombre de cœurs de processeur
 
     private static int[][] originalMatrix;
     private static int[][] transposedMatrix;
@@ -16,22 +13,25 @@ class MatrixTranspose {
 
         long startTime, endTime;
 
-        // Sequential Matrix Transposition
+        // Transposition séquentielle de la matrice
         startTime = System.nanoTime();
         transposeMatrixSequentially();
         endTime = System.nanoTime();
-        System.out.println("Sequential Transposition Time: " + (endTime - startTime) + " nanoseconds");
+        System.out.println("Temps de transposition séquentielle : " + (endTime - startTime) + " nanosecondes");
 
-        // Reset transposedMatrix for parallel transposition
+        // Réinitialise la matrice transposée pour la transposition parallèle
         transposedMatrix = new int[MATRIX_SIZE][MATRIX_SIZE];
 
-        // Parallel Matrix Transposition
+        // Optimisation du nombre de threads en fonction des cœurs de processeur
+        NUM_THREADS = Math.min(NUM_THREADS, MATRIX_SIZE);
+
+        // Transposition de la matrice en parallèle
         startTime = System.nanoTime();
         transposeMatrixConcurrently();
         endTime = System.nanoTime();
-        System.out.println("Parallel Transposition Time: " + (endTime - startTime) + " nanoseconds");
+        System.out.println("Temps de transposition parallèle : " + (endTime - startTime) + " nanosecondes");
 
-        // Verify that both results are the same
+        // Vérifie que les deux résultats sont identiques
         verifyResults();
     }
 
@@ -54,49 +54,47 @@ class MatrixTranspose {
                 transposedMatrix[j][i] = originalMatrix[i][j];
             }
         }
-        System.out.println("Sequential Matrix Transposition Completed");
+        System.out.println("Transposition séquentielle de la matrice terminée");
     }
 
     private static void transposeMatrixConcurrently() {
-        ExecutorService executorService = Executors.newFixedThreadPool(NUM_THREADS);
+        // Division de la matrice en segments et utilisation de threads pour la transposition
+        int segmentSize = MATRIX_SIZE / NUM_THREADS;
+        Thread[] threads = new Thread[NUM_THREADS];
 
-        for (int i = 0; i < NUM_THREADS; i++) {
-            final int threadIndex = i;
-            executorService.submit(() -> {
-                int startRow = threadIndex * (MATRIX_SIZE / NUM_THREADS);
-                int endRow = (threadIndex == NUM_THREADS - 1) ? MATRIX_SIZE : (threadIndex + 1) * (MATRIX_SIZE / NUM_THREADS);
-                transposeSubmatrix(startRow, endRow);
+        for (int t = 0; t < NUM_THREADS; t++) {
+            final int startRow = t * segmentSize;
+            final int endRow = (t == NUM_THREADS - 1) ? MATRIX_SIZE : (t + 1) * segmentSize;
+            threads[t] = new Thread(() -> {
+                for (int i = startRow; i < endRow; i++) {
+                    for (int j = 0; j < MATRIX_SIZE; j++) {
+                        transposedMatrix[j][i] = originalMatrix[i][j];
+                    }
+                }
             });
+            threads[t].start();
         }
 
-        executorService.shutdown();
-
         try {
-            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+            for (Thread thread : threads) {
+                thread.join();
+            }
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
-        System.out.println("Parallel Matrix Transposition Completed");
-    }
-
-    private static void transposeSubmatrix(int startRow, int endRow) {
-        for (int i = startRow; i < endRow; i++) {
-            for (int j = 0; j < MATRIX_SIZE; j++) {
-                transposedMatrix[j][i] = originalMatrix[i][j];
-            }
-        }
+        System.out.println("Transposition de la matrice en parallèle terminée");
     }
 
     private static void verifyResults() {
         for (int i = 0; i < MATRIX_SIZE; i++) {
             for (int j = 0; j < MATRIX_SIZE; j++) {
                 if (transposedMatrix[i][j] != originalMatrix[j][i]) {
-                    System.err.println("Error: Results do not match!");
+                    System.err.println("Erreur : les résultats ne correspondent pas !");
                     return;
                 }
             }
         }
-        System.out.println("Results Verified: Sequential and Parallel Transposition Match");
+        System.out.println("Résultats vérifiés : transposition séquentielle et parallèle identiques");
     }
 }
