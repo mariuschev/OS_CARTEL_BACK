@@ -1,7 +1,9 @@
 import java.util.Random;
 
 public class MatrixAddition {
-    private static final int MATRIX_SIZE = 5000;
+
+    private static final int MATRIX_SIZE = 3000;
+
     private static final int NUM_THREADS = 100;
 
     private static int[][] matrixA;
@@ -14,16 +16,16 @@ public class MatrixAddition {
         resultMatrix = new int[MATRIX_SIZE][MATRIX_SIZE];
 
         // Sequential Matrix Addition
-        long startTimeSeq = System.nanoTime();
+        long startTimeSeq = System.currentTimeMillis();
         addMatricesSequentially();
-        long endTimeSeq = System.nanoTime();
-        System.out.println("Sequential Addition Time: " + (endTimeSeq - startTimeSeq) + " nanoseconds");
+        long endTimeSeq = System.currentTimeMillis();
+        System.out.println("Sequential Addition Time: " + (endTimeSeq - startTimeSeq) + " milliseconds");
 
         // Parallel Matrix Addition
-        long startTimeParallel = System.nanoTime();
+        long startTimeParallel = System.currentTimeMillis();
         addMatricesConcurrently();
-        long endTimeParallel = System.nanoTime();
-        System.out.println("Parallel Addition Time: " + (endTimeParallel - startTimeParallel) + " nanoseconds");
+        long endTimeParallel = System.currentTimeMillis();
+        System.out.println("Parallel Addition Time: " + (endTimeParallel - startTimeParallel) + " milliseconds");
         // Verify that both results are the same
         verifyResults();
     }
